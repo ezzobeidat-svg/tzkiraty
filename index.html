@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141716" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="تذكيراتي">
+<title>تذكيراتي</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f4ef; --card:#ffffff; --ink:#1f2328; --muted:#6b7280; --line:#e8e4db;
+  --accent:#2f6f5e; --accent-ink:#ffffff; --accent-soft:#e2efe9;
+  --danger:#c2410c; --danger-soft:#fdeee5; --warn:#a86a12; --warn-soft:#fbf1dc;
+  --shadow:0 1px 2px rgba(20,20,10,.04),0 6px 18px rgba(20,20,10,.05);
+  --radius:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#141716; --card:#1c201f; --ink:#e8eae9; --muted:#9aa29f; --line:#2b302e;
+    --accent:#62b79e; --accent-ink:#0f1a16; --accent-soft:#1d3029;
+    --danger:#f08a5d; --danger-soft:#3a2219; --warn:#e2b45c; --warn-soft:#3a2f18;
+    --shadow:none;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:'IBM Plex Sans Arabic',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5}
+button{font:inherit;color:inherit}
+svg{width:18px;height:18px;flex:none}
+[hidden]{display:none!important}
+
+.wrap{max-width:640px;margin:0 auto;padding:28px 16px 110px;padding-top:max(28px,env(safe-area-inset-top))}
+
+/* Header */
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:22px}
+.hello h1{font-size:27px;margin:0 0 2px;font-weight:700;letter-spacing:-.01em}
+.hello p{margin:0;color:var(--muted);font-size:14px}
+.head-actions{display:flex;gap:8px}
+.icon-btn{position:relative;width:42px;height:42px;border-radius:13px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center;cursor:pointer;transition:transform .15s}
+.icon-btn:active{transform:scale(.94)}
+.sync{position:absolute;top:7px;left:7px;width:8px;height:8px;border-radius:50%;background:var(--accent);border:2px solid var(--card);box-sizing:content-box}
+.sync.busy{background:var(--warn);animation:pulse 1s infinite}
+.sync.err{background:var(--danger)}
+@keyframes pulse{50%{opacity:.35}}
+.spin svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(-360deg)}}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
+.stat b{display:block;font-size:24px;font-weight:700;line-height:1.2}
+.stat span{font-size:12.5px;color:var(--muted)}
+.stat.over b{color:var(--danger)}
+.stat.ok b{color:var(--accent)}
+
+/* Quick add */
+.quick{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:6px;box-shadow:var(--shadow);margin-bottom:18px;transition:border-color .2s}
+.quick:focus-within{border-color:var(--accent)}
+.quick input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:16px;padding:10px 10px;color:var(--ink);outline:none}
+.quick input::placeholder{color:var(--muted)}
+.quick .icon-btn{border:0;background:transparent;width:40px;height:40px;color:var(--muted)}
+.btn{border:0;border-radius:12px;padding:10px 18px;font-weight:600;font-size:15px;cursor:pointer;transition:transform .15s,opacity .15s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.danger{background:var(--danger-soft);color:var(--danger)}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;background:var(--line);padding:4px;border-radius:13px;margin-bottom:18px}
+.tabs button{flex:1;border:0;background:transparent;padding:8px 6px;border-radius:10px;font-size:14.5px;font-weight:500;color:var(--muted);cursor:pointer;transition:background .2s,color .2s}
+.tabs button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.tabs .count{font-size:12px;opacity:.7;margin-inline-start:4px}
+
+/* Groups & tasks */
+.group{margin-bottom:18px}
+.group h3{display:flex;align-items:center;gap:8px;margin:0 4px 8px;font-size:13px;font-weight:600;color:var(--muted)}
+.group h3 span{font-weight:500;background:var(--line);border-radius:999px;padding:0 8px;font-size:12px}
+.group.over h3{color:var(--danger)}
+
+.task{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:8px;box-shadow:var(--shadow);animation:in .25s ease both}
+@keyframes in{from{opacity:0;transform:translateY(4px)}}
+.check{flex:none;width:25px;height:25px;margin-top:1px;border-radius:50%;border:2px solid #b9b4a8;background:transparent;cursor:pointer;display:grid;place-items:center;color:transparent;transition:all .2s}
+.check svg{width:14px;height:14px;stroke-width:3}
+.check:hover{border-color:var(--accent);color:var(--accent)}
+.task.p-2 .check{border-color:var(--warn)}
+.task.p-3 .check{border-color:var(--danger)}
+.task.done .check{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.task.done .title{text-decoration:line-through;color:var(--muted)}
+.task.done{opacity:.8}
+.body{flex:1;min-width:0;cursor:pointer}
+.title{font-weight:500;font-size:16px;overflow-wrap:anywhere}
+.notes{color:var(--muted);font-size:14px;margin-top:2px;white-space:pre-wrap;overflow-wrap:anywhere}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;padding:2px 9px;border-radius:999px;background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.chip svg{width:13px;height:13px}
+.chip.over{background:var(--danger-soft);color:var(--danger);border-color:transparent}
+.chip.today{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.chip.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.actions{display:flex;gap:2px;opacity:.5;transition:opacity .2s}
+.task:hover .actions{opacity:1}
+.actions button{width:34px;height:34px;border:0;background:transparent;color:var(--muted);border-radius:9px;cursor:pointer;display:grid;place-items:center}
+.actions button:hover{background:var(--bg);color:var(--ink)}
+
+.empty{text-align:center;padding:48px 16px;color:var(--muted)}
+.empty b{display:block;font-size:18px;color:var(--ink);margin-bottom:4px;font-weight:600}
+.link{display:block;margin:14px auto 0;background:none;border:0;cursor:pointer;font-size:14px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.link.danger{color:var(--danger)}
+
+/* Sheets / modals */
+.overlay{position:fixed;inset:0;background:rgba(10,12,11,.38);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.overlay.open{display:flex;animation:fade .2s ease}
+@keyframes fade{from{opacity:0}}
+.sheet{background:var(--card);width:100%;max-width:520px;border-radius:22px 22px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto;animation:up .25s cubic-bezier(.2,.8,.2,1)}
+@keyframes up{from{transform:translateY(30px);opacity:.6}}
+@media (min-width:640px){.overlay{align-items:center}.sheet{border-radius:22px}}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.sheet-head h2{margin:0;font-size:19px;font-weight:700}
+.sheet-head .icon-btn{width:36px;height:36px;border:0;background:var(--bg)}
+label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin:14px 0 6px}
+.field{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);outline:none;transition:border-color .2s}
+.field:focus{border-color:var(--accent)}
+textarea.field{resize:vertical;min-height:70px}
+.row{display:flex;gap:10px}
+.row>div{flex:1;min-width:0}
+.quick-dates{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.quick-dates button{border:1px solid var(--line);background:transparent;border-radius:999px;padding:4px 12px;font-size:13px;cursor:pointer;color:var(--muted)}
+.quick-dates button:hover{border-color:var(--accent);color:var(--accent)}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;border:1px solid var(--line);background:var(--bg);border-radius:11px;padding:9px 4px;font-size:14px;cursor:pointer;color:var(--muted);transition:all .15s}
+.seg button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.seg.prio button[data-v="2"].on{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.seg.prio button[data-v="3"].on{background:var(--danger-soft);border-color:var(--danger);color:var(--danger)}
+.sheet-foot{display:flex;gap:10px;margin-top:22px}
+.sheet-foot .btn.primary{flex:1;padding:13px}
+.hint{font-size:13px;color:var(--muted);margin:6px 0 0}
+.intro{background:var(--accent-soft);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:14px;margin:8px 0 4px}
+
+/* Toast */
+.toast{position:fixed;bottom:calc(22px + env(safe-area-inset-bottom));left:50%;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:13px;font-size:14.5px;display:flex;align-items:center;gap:14px;opacity:0;pointer-events:none;transition:all .25s;z-index:30;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{background:none;border:0;color:var(--accent-soft);font-weight:700;cursor:pointer;padding:0}
+@media (prefers-color-scheme: dark){.toast button{color:var(--accent-ink)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="hello">
+      <h1 id="greet">مرحبًا</h1>
+      <p id="todayLabel"></p>
+    </div>
+    <div class="head-actions">
+      <button class="icon-btn" id="refreshBtn" title="مزامنة" aria-label="مزامنة"><span class="sync" id="sync"></span><span id="refreshIcon"></span></button>
+      <button class="icon-btn" id="settingsBtn" title="الإعدادات" aria-label="الإعدادات"><span id="gearIcon"></span></button>
+    </div>
+  </header>
+
+  <section class="stats">
+    <div class="stat"><b id="sToday">0</b><span>لليوم</span></div>
+    <div class="stat over"><b id="sOver">0</b><span>متأخرة</span></div>
+    <div class="stat ok"><b id="sDone">0</b><span>أُنجزت اليوم</span></div>
+  </section>
+
+  <form class="quick" id="quickForm" autocomplete="off">
+    <input id="quickInput" placeholder="أضف مهمة جديدة…" aria-label="مهمة جديدة" enterkeyhint="done">
+    <button type="button" class="icon-btn" id="detailsBtn" title="إضافة موعد وتفاصيل" aria-label="إضافة موعد وتفاصيل"></button>
+    <button class="btn primary" type="submit">إضافة</button>
+  </form>
+
+  <nav class="tabs" id="tabs">
+    <button data-f="all" class="on">المهام<span class="count" id="cAll"></span></button>
+    <button data-f="today">اليوم<span class="count" id="cToday"></span></button>
+    <button data-f="done">المنجزة</button>
+  </nav>
+
+  <main id="list"></main>
+</div>
+
+<!-- Task sheet -->
+<div class="overlay" id="taskSheet">
+  <form class="sheet" id="taskForm" autocomplete="off">
+    <div class="sheet-head">
+      <h2 id="sheetTitle">مهمة جديدة</h2>
+      <button type="button" class="icon-btn" data-close aria-label="إغلاق"></button>
+    </div>
+    <label for="fTitle">المهمة</label>
+    <input class="field" id="fTitle" required placeholder="ماذا تريد أن تتذكر؟">
+    <label for="fNotes">ملاحظات</label>
+    <textarea class="field" id="fNotes" placeholder="تفاصيل إضافية (اختياري)"></textarea>
+    <div class="row">
+      <div><label for="fDate">التاريخ</label><input class="field" type="date" id="fDate"></div>
+      <div><label for="fTime">الساعة</label><input class="field" type="time" id="fTime"></div>
+    </div>
+    <div class="quick-dates">
+      <button type="button" data-d="0">اليوم</button>
+      <button type="button" data-d="1">غدًا</button>
+      <button type="button" data-d="7">بعد أسبوع</button>
+      <button type="button" data-d="clear">بلا موعد</button>
+    </div>
+    <label>الأهمية</label>
+    <div class="seg prio" id="fPriority">
+      <button type="button" data-v="1">عادية</button>
+      <button type="button" data-v="2">مهمة</button>
+      <button type="button" data-v="3">عاجلة</button>
+    </div>
+    <label>التكرار</label>
+    <div class="seg" id="fRepeat">
+      <button type="button" data-v="none">لا</button>
+      <button type="button" data-v="daily">يومي</button>
+      <button type="button" data-v="weekly">أسبوعي</button>
+      <button type="button" data-v="monthly">شهري</button>
+    </div>
+    <div class="sheet-foot">
+      <button type="button" class="btn danger" id="fDelete">حذف</button>
+      <button type="submit" class="btn primary">حفظ</button>
+    </div>
+  </form>
+</div>
+
+<!-- Settings sheet -->
+<div class="overlay" id="settingsSheet">
+  <form class="sheet" id="settingsForm" autocomplete="off">
+    <div class="sheet-head">
+      <h2>الإعدادات</h2>
+      <button type="button" class="icon-btn" data-close aria-label="إغلاق"></button>
+    </div>
+    <div class="intro" id="intro" hidden>أهلًا! الرابط مثبّت مسبقًا — اكتب فقط الرمز السري (TOKEN) الذي وضعته في Code.gs، ثم اضغط حفظ.</div>
+    <label for="sUrl">رابط Apps Script (ينتهي بـ ‎/exec)</label>
+    <input class="field" id="sUrl" dir="ltr" placeholder="https://script.google.com/macros/s/…/exec">
+    <label for="sToken">الرمز السري</label>
+    <input class="field" id="sToken" dir="ltr" type="password" placeholder="نفس TOKEN في Code.gs">
+    <p class="hint" id="sStatus"></p>
+    <label>إشعارات المتصفح</label>
+    <button type="button" class="btn ghost" id="notifBtn">تفعيل الإشعارات</button>
+    <p class="hint">تظهر عندما يكون التطبيق مفتوحًا. تذكيرات البريد من Google تصلك دائمًا.</p>
+    <div class="sheet-foot">
+      <button type="button" class="btn ghost" id="testBtn">اختبار الاتصال</button>
+      <button type="submit" class="btn primary">حفظ</button>
+    </div>
+  </form>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ---------- Icons ---------- */
+const svg = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const ICON = {
+  check: svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
+  clock: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+  repeat: svg('<path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>'),
+  edit: svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'),
+  trash: svg('<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>'),
+  cal: svg('<rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M3 9.5h18M8 3v3M16 3v3"/>'),
+  refresh: svg('<path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/>'),
+  gear: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
+  close: svg('<path d="M6 6l12 12M18 6L6 18"/>')
+};
+
+/* ---------- State & storage ---------- */
+const K = { url:'rem.url', token:'rem.token', cache:'rem.cache', queue:'rem.queue', notified:'rem.notified' };
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+let tasks = store.get(K.cache, []);
+let queue = store.get(K.queue, []);
+let filter = 'all', editingId = null, flushing = false;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 9));
+const nowISO = () => new Date().toISOString();
+const pad = n => String(n).padStart(2, '0');
+const DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbxp2FzyfnCdxOHN_2aoZ4xHD-8R9Lw2XgEnJ_ik6L0W3UlTQHeEgY0DtfAyJae4Qa9kWg/exec';
+const cfg = () => ({ url: store.get(K.url, '') || DEFAULT_URL, token: store.get(K.token, '') });
+
+/* ---------- Dates ---------- */
+function parseDue(s, h = 23, m = 59){
+  const x = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/);
+  if (!x) return null;
+  const hasTime = x[4] !== undefined;
+  return { date: new Date(+x[1], +x[2]-1, +x[3], hasTime ? +x[4] : h, hasTime ? +x[5] : m), hasTime };
+}
+function toDue(d, hasTime){
+  const s = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  return hasTime ? `${s}T${pad(d.getHours())}:${pad(d.getMinutes())}` : s;
+}
+const sod = d => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
+const dayDiff = d => Math.round((sod(d) - sod(new Date())) / 86400000);
+const fmtDay = new Intl.DateTimeFormat('ar-u-nu-latn', { weekday:'long', day:'numeric', month:'long' });
+
+function dueLabel(t){
+  const p = parseDue(t.due); if (!p) return null;
+  const diff = dayDiff(p.date);
+  const time = p.hasTime ? ` ${pad(p.date.getHours())}:${pad(p.date.getMinutes())}` : '';
+  const txt = diff === 0 ? 'اليوم' : diff === 1 ? 'غدًا' : diff === -1 ? 'أمس' : fmtDay.format(p.date);
+  const over = !t.done && p.date < new Date();
+  return { txt: txt + time, cls: over ? 'over' : (diff === 0 ? 'today' : '') };
+}
+function bucket(t){
+  const p = parseDue(t.due); if (!p) return 'none';
+  if (p.date < new Date()) return 'over';
+  const d = dayDiff(p.date);
+  return d === 0 ? 'today' : d === 1 ? 'tomorrow' : 'later';
+}
+function nextDue(due, repeat){
+  const p = parseDue(due, 9, 0); if (!p) return due;
+  const d = new Date(p.date), today = sod(new Date());
+  const step = () => {
+    if (repeat === 'daily') d.setDate(d.getDate() + 1);
+    else if (repeat === 'weekly') d.setDate(d.getDate() + 7);
+    else d.setMonth(d.getMonth() + 1);
+  };
+  step();
+  while (sod(d) < today) step();
+  return toDue(d, p.hasTime);
+}
+function sortTasks(a, b){
+  const pa = parseDue(a.due), pb = parseDue(b.due);
+  if (pa && pb && pa.date - pb.date) return pa.date - pb.date;
+  if (pa && !pb) return -1;
+  if (!pa && pb) return 1;
+  return (+b.priority || 1) - (+a.priority || 1) || String(a.createdAt).localeCompare(String(b.createdAt));
+}
+
+/* ---------- Render ---------- */
+const REP = { daily:'يوميًا', weekly:'أسبوعيًا', monthly:'شهريًا' };
+const GROUPS = [['over','متأخرة'], ['today','اليوم'], ['tomorrow','غدًا'], ['later','لاحقًا'], ['none','بلا موعد']];
+
+function taskHTML(t){
+  const d = dueLabel(t), pr = +t.priority || 1, rep = REP[t.repeat];
+  const prio = pr === 3 ? '<span class="chip over">عاجلة</span>' : pr === 2 ? '<span class="chip warn">مهمة</span>' : '';
+  const meta = (d || rep || prio) ? `<div class="meta">
+      ${d ? `<span class="chip ${d.cls}">${ICON.clock}${esc(d.txt)}</span>` : ''}
+      ${rep ? `<span class="chip">${ICON.repeat}${rep}</span>` : ''}${prio}</div>` : '';
+  return `<div class="task p-${pr}${t.done ? ' done' : ''}" data-id="${esc(t.id)}">
+    <button class="check" data-act="toggle" aria-label="${t.done ? 'إلغاء الإنجاز' : 'تم الإنجاز'}">${ICON.check}</button>
+    <div class="body" data-act="edit">
+      <div class="title">${esc(t.title)}</div>
+      ${t.notes ? `<div class="notes">${esc(t.notes)}</div>` : ''}
+      ${meta}
+    </div>
+    <div class="actions">
+      <button data-act="edit" aria-label="تعديل">${ICON.edit}</button>
+      <button data-act="delete" aria-label="حذف">${ICON.trash}</button>
+    </div>
+  </div>`;
+}
+const empty = (a, b) => `<div class="empty"><b>${a}</b>${b}</div>`;
+
+function render(){
+  const open = tasks.filter(t => !t.done).sort(sortTasks);
+  const todayList = open.filter(t => ['over','today'].includes(bucket(t)));
+  const doneToday = tasks.filter(t => t.done && t.completedAt && dayDiff(new Date(t.completedAt)) === 0).length;
+  $('#sToday').textContent = todayList.length;
+  $('#sOver').textContent = open.filter(t => bucket(t) === 'over').length;
+  $('#sDone').textContent = doneToday;
+  $('#cAll').textContent = open.length || '';
+  $('#cToday').textContent = todayList.length || '';
+
+  let html = '';
+  if (filter === 'all'){
+    for (const [k, label] of GROUPS){
+      const g = open.filter(t => bucket(t) === k);
+      if (g.length) html += `<div class="group ${k}"><h3>${label}<span>${g.length}</span></h3>${g.map(taskHTML).join('')}</div>`;
+    }
+    if (!open.length) html = empty('لا توجد مهام مفتوحة 🎉', 'أضف مهمة جديدة من الحقل في الأعلى');
+  } else if (filter === 'today'){
+    html = todayList.length ? todayList.map(taskHTML).join('') : empty('يومك خالٍ', 'لا مهام مستحقة اليوم');
+  } else {
+    const g = tasks.filter(t => t.done).sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)));
+    html = g.length ? g.map(taskHTML).join('') + '<button class="link danger" data-act="clearDone">حذف كل المهام المنجزة</button>'
+                    : empty('لا شيء هنا بعد', 'المهام التي تنجزها ستظهر هنا');
+  }
+  $('#list').innerHTML = html;
+}
+
+function commit(){ store.set(K.cache, tasks); render(); }
+
+function setHeader(){
+  const h = new Date().getHours();
+  $('#greet').textContent = h < 12 ? 'صباح الخير' : h < 18 ? 'نهارك سعيد' : 'مساء الخير';
+  $('#todayLabel').textContent = fmtDay.format(new Date());
+}
+
+/* ---------- Sync with Google Sheets ---------- */
+function setSync(state){
+  $('#sync').className = 'sync' + (state === 'busy' ? ' busy' : state === 'err' ? ' err' : '');
+  $('#refreshBtn').classList.toggle('spin', state === 'busy');
+}
+function errMsg(e){
+  const m = String(e && e.message || e);
+  if (m === 'unauthorized') return 'الرمز السري غير صحيح';
+  if (m === 'no-url') return 'أضف رابط Apps Script في الإعدادات';
+  return 'تعذّر الاتصال — سيعاد المحاولة تلقائيًا';
+}
+async function apiGet(c = cfg()){
+  if (!c.url) throw new Error('no-url');
+  const r = await fetch(c.url + '?action=list&token=' + encodeURIComponent(c.token) + '&t=' + Date.now());
+  const d = await r.json();
+  if (!d.ok) throw new Error(d.error);
+  return d.tasks;
+}
+async function apiPost(op){
+  const { url, token } = cfg();
+  if (!url) throw new Error('no-url');
+  const r = await fetch(url, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify({ ...op, token }) });
+  const d = await r.json();
+  if (!d.ok) throw new Error(d.error);
+  return d;
+}
+function enqueue(op){ queue.push(op); store.set(K.queue, queue); flush(); }
+
+async function flush(){
+  if (flushing || !queue.length) return;
+  if (!cfg().url){ setSync('err'); return; }
+  flushing = true; setSync('busy');
+  try{
+    while (queue.length){
+      try{ await apiPost(queue[0]); }
+      catch(e){ if (e.message !== 'not-found') throw e; } // حُذفت المهمة من مكان آخر — تجاهل
+      queue.shift(); store.set(K.queue, queue);
+    }
+    setSync('ok');
+  }catch(e){
+    setSync('err');
+    if (e.message === 'unauthorized') toast(errMsg(e));
+  }finally{ flushing = false; }
+}
+
+const norm = t => ({ ...t, priority: String(t.priority || 1), repeat: t.repeat || 'none', done: t.done === true || String(t.done).toUpperCase() === 'TRUE' });
+
+async function load(){
+  if (!cfg().url){ setSync('err'); return; }
+  await flush();
+  if (queue.length) return;
+  setSync('busy');
+  try{
+    const list = await apiGet();
+    if (!queue.length){ tasks = list.map(norm); commit(); }
+    setSync('ok');
+    checkNotify();
+  }catch(e){ setSync('err'); toast(errMsg(e)); }
+}
+
+/* ---------- Actions ---------- */
+function toggleTask(id){
+  const t = tasks.find(x => x.id === id); if (!t) return;
+  t.done = !t.done;
+  t.completedAt = t.done ? nowISO() : '';
+  const patch = { id, done: t.done, completedAt: t.completedAt };
+  let next = null;
+  if (t.done && t.repeat && t.repeat !== 'none' && t.due){
+    next = { id: uid(), title: t.title, notes: t.notes, priority: t.priority, repeat: t.repeat,
+             due: nextDue(t.due, t.repeat), done: false, createdAt: nowISO(), updatedAt: nowISO(), completedAt: '', notified: '' };
+    t.repeat = 'none'; patch.repeat = 'none';
+    tasks.push(next);
+  }
+  commit();
+  enqueue({ action:'update', task: patch });
+  if (next){ enqueue({ action:'add', task: next }); toast('أُنجزت ✓ — الموعد التالي: ' + dueLabel(next).txt); }
+  else if (t.done) toast('أحسنت! أُنجزت المهمة ✓');
+}
+
+function deleteTask(id){
+  const i = tasks.findIndex(t => t.id === id); if (i < 0) return;
+  const [t] = tasks.splice(i, 1);
+  commit();
+  let undone = false;
+  const timer = setTimeout(() => { if (!undone) enqueue({ action:'delete', id }); }, 4500);
+  toast('حُذفت المهمة', { label:'تراجع', fn(){ undone = true; clearTimeout(timer); tasks.splice(i, 0, t); commit(); } });
+}
+
+function clearDone(){
+  const done = tasks.filter(t => t.done);
+  if (!done.length || !confirm(`حذف ${done.length} من المهام المنجزة نهائيًا؟`)) return;
+  tasks = tasks.filter(t => !t.done); commit();
+  done.forEach(t => enqueue({ action:'delete', id: t.id }));
+  toast('تم الحذف');
+}
+
+function addQuick(title){
+  const t = { id: uid(), title, notes:'', due:'', priority:'1', repeat:'none', done:false,
+              createdAt: nowISO(), updatedAt: nowISO(), completedAt:'', notified:'' };
+  tasks.push(t); commit();
+  enqueue({ action:'add', task: t });
+  toast('أُضيفت المهمة');
+}
+
+/* ---------- Sheets UI ---------- */
+function openSheet(sel){ $(sel).classList.add('open'); }
+function closeSheets(){ document.querySelectorAll('.overlay.open').forEach(o => o.classList.remove('open')); editingId = null; }
+function setSeg(sel, v){ document.querySelectorAll(sel + ' button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); }
+const getSeg = sel => (document.querySelector(sel + ' button.on') || {}).dataset?.v;
+
+function openTask(id, prefill = ''){
+  editingId = id || null;
+  const t = id ? tasks.find(x => x.id === id) : null;
+  $('#sheetTitle').textContent = t ? 'تعديل المهمة' : 'مهمة جديدة';
+  $('#fTitle').value = t ? t.title : prefill;
+  $('#fNotes').value = t ? (t.notes || '') : '';
+  const p = t ? parseDue(t.due) : null;
+  $('#fDate').value = p ? toDue(p.date, false) : '';
+  $('#fTime').value = p && p.hasTime ? `${pad(p.date.getHours())}:${pad(p.date.getMinutes())}` : '';
+  setSeg('#fPriority', String(t ? t.priority || 1 : 1));
+  setSeg('#fRepeat', t ? t.repeat || 'none' : 'none');
+  $('#fDelete').hidden = !t;
+  openSheet('#taskSheet');
+  setTimeout(() => $('#fTitle').focus(), 60);
+}
+
+function openSettings(first = false){
+  const c = cfg();
+  $('#sUrl').value = c.url; $('#sToken').value = c.token;
+  $('#intro').hidden = !first; $('#sStatus').textContent = '';
+  updateNotifBtn();
+  openSheet('#settingsSheet');
+}
+
+function updateNotifBtn(){
+  const b = $('#notifBtn');
+  if (!('Notification' in window)){ b.textContent = 'غير مدعومة في هذا المتصفح'; b.disabled = true; return; }
+  b.textContent = Notification.permission === 'granted' ? 'الإشعارات مفعّلة ✓' : Notification.permission === 'denied' ? 'محظورة من إعدادات المتصفح' : 'تفعيل الإشعارات';
+  b.disabled = Notification.permission !== 'default';
+}
+
+/* ---------- Browser notifications (while open) ---------- */
+function checkNotify(){
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const seen = store.get(K.notified, {}), now = new Date();
+  for (const t of tasks){
+    if (t.done || !t.due) continue;
+    const p = parseDue(t.due, 9, 0), key = t.id + '|' + t.due;
+    if (p && p.date <= now && !seen[key] && now - p.date < 6 * 3600e3){
+      seen[key] = 1;
+      try{ new Notification('⏰ ' + t.title, { body: t.notes || dueLabel(t).txt, tag: t.id }); }catch(e){}
+    }
+  }
+  store.set(K.notified, seen);
+}
+
+/* ---------- Toast ---------- */
+let toastTimer;
+function toast(msg, action){
+  const el = $('#toast');
+  el.innerHTML = `<span>${esc(msg)}</span>${action ? `<button type="button">${esc(action.label)}</button>` : ''}`;
+  if (action) el.querySelector('button').onclick = () => { action.fn(); el.classList.remove('show'); };
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), action ? 4500 : 2400);
+}
+
+/* ---------- Events ---------- */
+$('#refreshIcon').outerHTML = ICON.refresh;
+$('#gearIcon').outerHTML = ICON.gear;
+$('#detailsBtn').innerHTML = ICON.cal;
+document.querySelectorAll('[data-close]').forEach(b => { b.innerHTML = ICON.close; b.onclick = closeSheets; });
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) closeSheets(); }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheets(); });
+
+$('#quickForm').onsubmit = e => {
+  e.preventDefault();
+  const v = $('#quickInput').value.trim(); if (!v) return;
+  addQuick(v); $('#quickInput').value = '';
+};
+$('#detailsBtn').onclick = () => { openTask(null, $('#quickInput').value.trim()); $('#quickInput').value = ''; };
+
+$('#tabs').onclick = e => {
+  const b = e.target.closest('button[data-f]'); if (!b) return;
+  filter = b.dataset.f;
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+  render();
+};
+
+$('#list').onclick = e => {
+  const a = e.target.closest('[data-act]'); if (!a) return;
+  if (a.dataset.act === 'clearDone') return clearDone();
+  const id = a.closest('.task')?.dataset.id; if (!id) return;
+  if (a.dataset.act === 'toggle') toggleTask(id);
+  else if (a.dataset.act === 'edit') openTask(id);
+  else if (a.dataset.act === 'delete') deleteTask(id);
+};
+
+document.querySelectorAll('.seg').forEach(s => s.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (b) setSeg('#' + s.id, b.dataset.v);
+}));
+document.querySelector('.quick-dates').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.d === 'clear'){ $('#fDate').value = ''; $('#fTime').value = ''; return; }
+  const d = new Date(); d.setDate(d.getDate() + +b.dataset.d);
+  $('#fDate').value = toDue(d, false);
+};
+
+$('#taskForm').onsubmit = e => {
+  e.preventDefault();
+  const title = $('#fTitle').value.trim(); if (!title) return;
+  let date = $('#fDate').value; const time = $('#fTime').value;
+  if (time && !date) date = toDue(new Date(), false);
+  const data = { title, notes: $('#fNotes').value.trim(), due: date ? (time ? `${date}T${time}` : date) : '',
+                 priority: getSeg('#fPriority') || '1', repeat: getSeg('#fRepeat') || 'none' };
+  if (editingId){
+    const t = tasks.find(x => x.id === editingId);
+    if (t){
+      if (t.due !== data.due) t.notified = '';
+      Object.assign(t, data, { updatedAt: nowISO() });
+      enqueue({ action:'update', task: { id: t.id, ...data } });
+      toast('تم الحفظ');
+    }
+  } else {
+    const t = { id: uid(), ...data, done:false, createdAt: nowISO(), updatedAt: nowISO(), completedAt:'', notified:'' };
+    tasks.push(t);
+    enqueue({ action:'add', task: t });
+    toast('أُضيفت المهمة');
+  }
+  closeSheets(); commit();
+};
+$('#fDelete').onclick = () => { const id = editingId; closeSheets(); deleteTask(id); };
+
+$('#settingsBtn').onclick = () => openSettings(false);
+$('#refreshBtn').onclick = () => load();
+$('#testBtn').onclick = async () => {
+  const st = $('#sStatus'); st.textContent = 'جارٍ الاختبار…';
+  try{
+    const list = await apiGet({ url: $('#sUrl').value.trim(), token: $('#sToken').value.trim() });
+    st.textContent = `✓ الاتصال يعمل — ${list.length} مهمة في الجدول`;
+  }catch(e){ st.textContent = '✗ ' + errMsg(e); }
+};
+$('#settingsForm').onsubmit = e => {
+  e.preventDefault();
+  store.set(K.url, $('#sUrl').value.trim());
+  store.set(K.token, $('#sToken').value.trim());
+  closeSheets(); toast('تم حفظ الإعدادات'); load();
+};
+$('#notifBtn').onclick = async () => {
+  if (!('Notification' in window)) return;
+  await Notification.requestPermission(); updateNotifBtn();
+  if (Notification.permission === 'granted') new Notification('تذكيراتي', { body: 'ستصلك الإشعارات هنا ✓' });
+};
+
+document.addEventListener('visibilitychange', () => { if (!document.hidden){ setHeader(); load(); } });
+window.addEventListener('online', flush);
+setInterval(() => { render(); checkNotify(); }, 30000);
+setInterval(flush, 20000);
+
+/* ---------- Start ---------- */
+setHeader(); render();
+if (!cfg().token){ setSync('err'); openSettings(true); } else load();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+  });
+}
+</script>
+</body>
+</html>
