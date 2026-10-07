@@ -1,5 +1,5 @@
 // خدمة بسيطة لتخزين الصفحة الأساسية، تمنع حذف التطبيق تلقائيًا من الشاشة الرئيسية
-const CACHE_NAME = 'tazkirati-v1';
+const CACHE_NAME = 'tazkirati-v2';
 const CORE_ASSETS = [
   './',
   './index.html',

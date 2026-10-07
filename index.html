@@ -237,11 +237,8 @@ textarea.field{resize:vertical;min-height:70px}
       <h2>الإعدادات</h2>
       <button type="button" class="icon-btn" data-close aria-label="إغلاق"></button>
     </div>
-    <div class="intro" id="intro" hidden>أهلًا! الرابط مثبّت مسبقًا — اكتب فقط الرمز السري (TOKEN) الذي وضعته في Code.gs، ثم اضغط حفظ.</div>
     <label for="sUrl">رابط Apps Script (ينتهي بـ ‎/exec)</label>
     <input class="field" id="sUrl" dir="ltr" placeholder="https://script.google.com/macros/s/…/exec">
-    <label for="sToken">الرمز السري</label>
-    <input class="field" id="sToken" dir="ltr" type="password" placeholder="نفس TOKEN في Code.gs">
     <p class="hint" id="sStatus"></p>
     <label>إشعارات المتصفح</label>
     <button type="button" class="btn ghost" id="notifBtn">تفعيل الإشعارات</button>
@@ -271,7 +268,7 @@ const ICON = {
 };
 
 /* ---------- State & storage ---------- */
-const K = { url:'rem.url', token:'rem.token', cache:'rem.cache', queue:'rem.queue', notified:'rem.notified' };
+const K = { url:'rem.url', cache:'rem.cache', queue:'rem.queue', notified:'rem.notified' };
 const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
@@ -286,7 +283,7 @@ const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString
 const nowISO = () => new Date().toISOString();
 const pad = n => String(n).padStart(2, '0');
 const DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbxp2FzyfnCdxOHN_2aoZ4xHD-8R9Lw2XgEnJ_ik6L0W3UlTQHeEgY0DtfAyJae4Qa9kWg/exec';
-const cfg = () => ({ url: store.get(K.url, '') || DEFAULT_URL, token: store.get(K.token, '') });
+const cfg = () => ({ url: store.get(K.url, '') || DEFAULT_URL });
 
 /* ---------- Dates ---------- */
 function parseDue(s, h = 23, m = 59){
@@ -404,21 +401,20 @@ function setSync(state){
 }
 function errMsg(e){
   const m = String(e && e.message || e);
-  if (m === 'unauthorized') return 'الرمز السري غير صحيح';
   if (m === 'no-url') return 'أضف رابط Apps Script في الإعدادات';
   return 'تعذّر الاتصال — سيعاد المحاولة تلقائيًا';
 }
 async function apiGet(c = cfg()){
   if (!c.url) throw new Error('no-url');
-  const r = await fetch(c.url + '?action=list&token=' + encodeURIComponent(c.token) + '&t=' + Date.now());
+  const r = await fetch(c.url + '?action=list&t=' + Date.now());
   const d = await r.json();
   if (!d.ok) throw new Error(d.error);
   return d.tasks;
 }
 async function apiPost(op){
-  const { url, token } = cfg();
+  const { url } = cfg();
   if (!url) throw new Error('no-url');
-  const r = await fetch(url, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify({ ...op, token }) });
+  const r = await fetch(url, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(op) });
   const d = await r.json();
   if (!d.ok) throw new Error(d.error);
   return d;
@@ -438,7 +434,6 @@ async function flush(){
     setSync('ok');
   }catch(e){
     setSync('err');
-    if (e.message === 'unauthorized') toast(errMsg(e));
   }finally{ flushing = false; }
 }
 
@@ -525,8 +520,8 @@ function openTask(id, prefill = ''){
 
 function openSettings(first = false){
   const c = cfg();
-  $('#sUrl').value = c.url; $('#sToken').value = c.token;
-  $('#intro').hidden = !first; $('#sStatus').textContent = '';
+  $('#sUrl').value = c.url;
+  $('#sStatus').textContent = '';
   updateNotifBtn();
   openSheet('#settingsSheet');
 }
@@ -635,14 +630,13 @@ $('#refreshBtn').onclick = () => load();
 $('#testBtn').onclick = async () => {
   const st = $('#sStatus'); st.textContent = 'جارٍ الاختبار…';
   try{
-    const list = await apiGet({ url: $('#sUrl').value.trim(), token: $('#sToken').value.trim() });
+    const list = await apiGet({ url: $('#sUrl').value.trim() });
     st.textContent = `✓ الاتصال يعمل — ${list.length} مهمة في الجدول`;
   }catch(e){ st.textContent = '✗ ' + errMsg(e); }
 };
 $('#settingsForm').onsubmit = e => {
   e.preventDefault();
   store.set(K.url, $('#sUrl').value.trim());
-  store.set(K.token, $('#sToken').value.trim());
   closeSheets(); toast('تم حفظ الإعدادات'); load();
 };
 $('#notifBtn').onclick = async () => {
@@ -658,7 +652,7 @@ setInterval(flush, 20000);
 
 /* ---------- Start ---------- */
 setHeader(); render();
-if (!cfg().token){ setSync('err'); openSettings(true); } else load();
+if (!cfg().url){ setSync('err'); openSettings(true); } else load();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
